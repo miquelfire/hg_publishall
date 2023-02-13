@@ -19,34 +19,33 @@ License:
 For more information, please read the README.markdown file.
 """
 
-from mercurial.i18n import _
-from mercurial import commands, cmdutil, extensions, hg, util
-import ConfigParser, os
+testedwith = '6.3.2'
+
+from mercurial import commands, registrar
+
+cmdtable = {}
+command = registrar.command(cmdtable)
+
+@command(b'pushall',
+         [(b'', b'new-branch', None, b'pushes with new branch(es)',)],
+         b"Push to all your repositories.")
 
 def pushall(ui, repo, **opts):
     """The Publishall core function. Makes your life easier."""
-    repos = ui.configitems('paths')
+    repos = ui.configitems(b'paths')
     if not repos:
-        ui.warn("No paths defined in your hgrc. Pushall aborted.\n")
-    ui.status("%s paths found\n" % len(repos))
+        ui.warn(b"No paths defined in your hgrc. Pushall aborted.\n")
+    ui.status(b"%s paths found\n" % len(repos))
     for path in repos:
-        ui.status("* pushing to %s\n" % path[0])
+        ui.status(b"* pushing to %s\n" % path[0])
         try:
             commands.push(ui, repo, path[1], **opts)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
     return 0
 
-aliases = ('pusha','pushall')
-
-command = (
-    pushall,
-     [('', 'new-branch', None, 'pushes with new branch(es)')],
-    _("Push to all your repositories.\n"),
-)
-
-cmdtable = {}
-
-# Because I'm SO lazy
-for item in aliases:
-    cmdtable[item] = command
+@command(b'pusha',
+         [(b'', b'new-branch', None, b'pushes with new branch(es)',)],
+         b"Push to all your repositories.")
+def pusha(ui, repo, **opts):
+    return pushall(ui, repo, **opts)
